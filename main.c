@@ -6,10 +6,10 @@
 int main(int argc, char **argv){
 	
 	if(argc < 3){
-		printf ("\nusage:  scever_patch module<.elf/.prx> <500>\n");
+		printf ("\nusage:  scever_patch module<.elf/.prx> <05008001>\n");
 		return -1;
 	}
-	uint16_t fw_num = strtol (argv[2],NULL,16); 
+	uint32_t fw_num = strtoul(argv[2],NULL,16); 
 	printf("Setting to fw to: %x\n", fw_num);
 	printf("Opening: %s\n", argv[1]);
 	FILE *fp = fopen(argv[1],"r+b");
@@ -31,7 +31,7 @@ int main(int argc, char **argv){
 			char *sce_process_param = malloc(phdrs[i].p_filesz);
 			fseek(fp, phdrs[i].p_offset, SEEK_SET);
 			fread(sce_process_param,phdrs[i].p_filesz,1,fp);
-			uint16_t *req_ver = sce_process_param + 0x12;
+			uint32_t *req_ver = sce_process_param + 0x10;
 			printf("Original version: %x\n", *req_ver); 
 			*req_ver = fw_num;
 			printf("Writing version: %x\n", *req_ver);
@@ -51,10 +51,10 @@ int main(int argc, char **argv){
 				char name[128] ={};
 				memcpy(name, sce_version + offset + 1, sz - 0x4);
 				printf("Library name: %s\n", name, sz);
-				uint16_t *req_ver = sce_version + offset + 1 + sz - 0x4;
-				printf("Original version: %x\n", __builtin_bswap16(*req_ver));
-				*req_ver = __builtin_bswap16(fw_num);
-				printf("Setting version: %x\n", __builtin_bswap16(*req_ver)); 
+				uint32_t *req_ver = sce_version + offset + 1 + sz - 0x4;
+				printf("Original version: %x\n", __builtin_bswap32(*req_ver));
+				*req_ver = __builtin_bswap32(fw_num);
+				printf("Setting version: %x\n", __builtin_bswap32(*req_ver)); 
 				offset += sz + 1;
 			}
 			
